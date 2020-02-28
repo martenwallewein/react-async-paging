@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IFetchDataFunc, IFetchDataResponse, IFetchObjectInput } from '../types/FetchData';
 import { IAsyncPagingChildFunc, IFetchState } from '../types/AsyncPaging';
+import { times } from '../util/times';
 
 export interface IAsyncPagingProps<T> {
     items?: T[];
@@ -33,6 +34,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     const [nextPage, setNextPage] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(0);
     const [internalItemCount, setInternalItemCount] = useState<number>(itemCount || 0);
+    const [pages, setPages] = useState<number[]>([]);
 
     const updateDisplayItems = (pageNumber: number) => {
         const itemsToUse = items || paginatedItems;
@@ -75,6 +77,14 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             }
     };
 
+    // Keep pages up to date, infer pagecount from pages
+    useEffect(() => {
+        if (internalItemCount && pageSize && pageSize >= 0) {
+            const newPageCount = Math.ceil(internalItemCount / pageSize);
+            setPages(times(newPageCount));
+        }
+    }, [internalItemCount, pageSize]);
+
     // Check if we have to update children if page changed
     useEffect(() => {
         // External state used and currently fetching complete, then update page
@@ -94,7 +104,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         if (itemCount && itemCount > 0) {
             setInternalItemCount(itemCount);
         }
-    }, [itemCount])
+    }, [itemCount]);
 
     // Initial render finished, load first page?
     useEffect(() => {
@@ -106,23 +116,29 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     }, []);
 
     const back = async () => {
-
+        if(currentPage >= 1) {
+            fetchPageImpl(currentPage - 1)
+        }
     };
 
     const next = async () => {
-
+        if (currentPage < pages.length - 1) {
+            fetchPageImpl(currentPage + 1);
+        }
     };
 
     const goto = async (pageNumber: number) => {
-
+        if (pageNumber >= 0 && pageNumber < pages.length) {
+            fetchPageImpl(pageNumber);
+        }
     };
 
     const first = async () => {
-
+        fetchPageImpl(0);
     };
 
     const last = async () => {
-
+        fetchPageImpl(pages.length >= 0 ? pages.length : 0)
     };
 
     return (
