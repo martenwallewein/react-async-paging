@@ -1,11 +1,12 @@
 {
-  "name": "my-components",
+  "name": "react-async-paging",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
   "module": "build/index.es.js",
   "jsnext:main": "build/index.es.js",
   "scripts": {
+    "start": "webpack-dev-server --content-base ./src --hot --inline --colors --port 3000 --open",
     "build": "rollup -c",
     "lint": "standard",
     "format": "prettier-standard --format",
@@ -32,7 +33,9 @@
     "standard": "^14.3.1",
     "standard-prettier": "^1.0.1",
     "ts-jest": "^24.2.0",
-    "typescript": "^3.7.3"
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.3",
+    "webpack-dev-server": "^3.10.3"
   },
   "jest": {
     "preset": "ts-jest",
