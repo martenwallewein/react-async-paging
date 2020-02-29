@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { IFetchDataFunc, IFetchDataResponse, IFetchObjectInput } from '../types/FetchData';
 import { IAsyncPagingChildFunc, IFetchState } from '../types/AsyncPaging';
 import { times } from '../util/times';
 
 export interface IAsyncPagingProps<T> {
-    items?: T[];
+    items?: {[p: number]: T[]};
     fetchPage: IFetchDataFunc<T>;
     children: IAsyncPagingChildFunc<T>;
     itemCount?: number;
     pageSize: number;
-    setItems?: (items: T[]) => void;
+    setItems?: (items:  {[p: number]: T[]}) => void;
     skipInitialFetch?: boolean;
 }
 
@@ -26,7 +26,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     } = props;
 
     // Prefer items if passed
-    const [paginatedItems, setPaginatedItems] = useState<T[]>(items || []);
+    const [paginatedItems, setPaginatedItems] = useState<{[p: number]: T[]}>(items || {});
     const [itemsToDisplay, setItemsToDisplay] = useState<T[]>([]);
 
     const [fetchState, setFetchState] = useState<IFetchState>(IFetchState.RENDERING);
@@ -38,24 +38,23 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
 
     const updateDisplayItems = (pageNumber: number) => {
         const itemsToUse = items || paginatedItems;
-        setItemsToDisplay(itemsToUse.slice(pageNumber * pageSize, pageSize));
+        setItemsToDisplay(itemsToUse[pageNumber]);
     }
 
     const fetchPageImpl = async (pageNumber: number) => {
         setFetchState(IFetchState.LOADING);
         setNextPage(pageNumber);
 
-        // Check if fetch request can be cached
-        const targetIndex = pageNumber * pageSize;
         const itemsToUse = items || paginatedItems;
         
-        if (itemsToUse[targetIndex]) {
+        // Check if fetch request can be cached
+        if (itemsToUse[pageNumber]) {
             // Finished fetch, data locally available
             setFetchState(IFetchState.LOADED);
             return;
         }
 
-        const fetchRes = await fetchPage(0, pageSize);
+        const fetchRes = await fetchPage(pageNumber, pageSize);
         handleFetchedPage({
             pageNumber,
             pageSize,
@@ -66,15 +65,18 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         fetchRequest: IFetchObjectInput,
         fetchResult: IFetchDataResponse<T>
         ) => {
-            const itemsToUse = items || paginatedItems;
-            const newItems = [...itemsToUse];
-            newItems.splice(fetchRequest.pageNumber * fetchRequest.pageSize, 0, ...fetchResult[0]);
+            const itemsToUse = {...(items || paginatedItems)};
+            itemsToUse[fetchRequest.pageNumber] = fetchResult[0];
+
+            // TODO: Update itemCount if required
+            
             // External items used
             if (setItems) {
-                setItems(newItems);
+                setItems(itemsToUse);
             } else { // Internal items used
-                setPaginatedItems(newItems);
+                setPaginatedItems(itemsToUse);
             }
+            setFetchState(IFetchState.LOADED);
     };
 
     // Keep pages up to date, infer pagecount from pages
@@ -88,13 +90,15 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     // Check if we have to update children if page changed
     useEffect(() => {
         // External state used and currently fetching complete, then update page
-        if (items && items.length > 0 && fetchState === IFetchState.LOADED) {
+        if (items && fetchState === IFetchState.LOADED) {
+            setFetchState(IFetchState.READY);
             setCurrentPage(nextPage);
             updateDisplayItems(nextPage);
         }
-
+        
         // Local items used and fetching complete, then update page
         if (fetchState === IFetchState.LOADED) {
+            setFetchState(IFetchState.READY);
             setCurrentPage(nextPage);
             updateDisplayItems(nextPage);
         }
@@ -138,15 +142,15 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     };
 
     const last = async () => {
-        fetchPageImpl(pages.length >= 0 ? pages.length : 0)
+        fetchPageImpl(pages.length >= 0 ? pages.length - 1 : 0)
     };
 
     return (
         children(itemsToDisplay, {
             currentPage,
             fetchState,
-            pageCount: 0,
-            pages: [],
+            pageCount: pages.length,
+            pages,
         }, {
             goto,
             back,

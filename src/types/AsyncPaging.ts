@@ -1,5 +1,3 @@
-import { ReactNode } from 'react';
-
 export enum IFetchState {
     RENDERING = 0,
     RENDERED = 1,
@@ -23,4 +21,4 @@ export interface IAsyncPagingNavigationFuncs {
     last: () => Promise<void>;
 }
 
-export type IAsyncPagingChildFunc<T> = (items: T[], meta: IAsyncPagingMetaInfo, nav: IAsyncPagingNavigationFuncs) => ReactNode;
+export type IAsyncPagingChildFunc<T> = (items: T[], meta: IAsyncPagingMetaInfo, nav: IAsyncPagingNavigationFuncs) => any; // FIXME Types
