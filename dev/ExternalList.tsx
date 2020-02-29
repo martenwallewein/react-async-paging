@@ -2,6 +2,7 @@ import { times } from "../util/times";
 import * as React from 'react';
 import { AsyncPaging } from "../components/AsyncPaging";
 import { IFetchDataFunc } from "../types/FetchData";
+import { IAsyncPagingItemStore } from "../types/AsyncPaging";
 // Imagine this array is on your server...
 const items = times(100);
 
@@ -10,15 +11,23 @@ const fetchPage: IFetchDataFunc<number> = (pageNumber: number, pageSize: number)
     return new Promise((resolve) => {
         setTimeout(() => {
             const res  = items.slice(pageNumber * pageSize, pageNumber * pageSize + pageSize);
-            resolve([res]);
+            resolve([res, {itemCount: 100}]);
         }, 1000);
     })
    
 }
 
-export const InternalList = () => {
+export const ExternalList = () => {
+    const [items, setItems] = React.useState<IAsyncPagingItemStore<number>>({});
+    const [pageSize, /*setPageSize*/] = React.useState(5);
+
+    /*React.useEffect(() => {
+        setTimeout(() => {
+            setPageSize(10);
+        }, 3000)
+    }, [])*/
     return (
-        <AsyncPaging fetchPage={fetchPage} pageSize={5} itemCount={100}>
+        <AsyncPaging fetchPage={fetchPage} pageSize={pageSize} items={items} setItems={setItems}>
         {
             (items, {
                 currentPage,

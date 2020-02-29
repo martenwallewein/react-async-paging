@@ -2,16 +2,23 @@
   "name": "react-async-paging",
   "version": "1.0.0",
   "description": "",
-  "main": "build/index.js",
   "module": "build/index.es.js",
   "jsnext:main": "build/index.es.js",
   "scripts": {
-    "start": "webpack-dev-server --content-base ./src --hot --inline --colors --port 3000 --open  --config webpack.dev.js",
-    "build": "rollup -c",
+    "start": "webpack-dev-server --hot --inline --colors --port 3000 --open  --config webpack.dev.js",
+    "build": "tsc",
     "lint": "standard",
     "format": "prettier-standard --format",
     "test": "jest --coverage"
   },
+  "main": "build/index.js",
+    "publishConfig": {
+        "registry": "https://registry.npmjs.com",
+        "access": "public"
+    },
+    "files": [
+        "build"
+    ],
   "keywords": [],
   "author": "",
   "license": "ISC",
