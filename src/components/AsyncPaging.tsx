@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { IFetchDataFunc, IFetchDataResponse, IFetchObjectInput } from '../types/FetchData';
-import { IAsyncPagingChildFunc, IFetchState } from '../types/AsyncPaging';
+import { IAsyncPagingChildFunc, IFetchState, IAsyncPagingItemStore } from '../types/AsyncPaging';
 import { times } from '../util/times';
 
 export interface IAsyncPagingProps<T> {
-    items?: {[p: number]: T[]};
+    items?: IAsyncPagingItemStore<T>;
     fetchPage: IFetchDataFunc<T>;
     children: IAsyncPagingChildFunc<T>;
     itemCount?: number;
     pageSize: number;
-    setItems?: (items:  {[p: number]: T[]}) => void;
+    setItems?: (items:  IAsyncPagingItemStore<T>) => void;
     skipInitialFetch?: boolean;
 }
 
@@ -46,7 +46,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         setNextPage(pageNumber);
 
         const itemsToUse = items || paginatedItems;
-        
+
         // Check if fetch request can be cached
         if (itemsToUse[pageNumber]) {
             // Finished fetch, data locally available
@@ -68,8 +68,11 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             const itemsToUse = {...(items || paginatedItems)};
             itemsToUse[fetchRequest.pageNumber] = fetchResult[0];
 
-            // TODO: Update itemCount if required
-            
+            // Update itemCount if required (comes from api call)
+            if(fetchResult[1]) {
+                setInternalItemCount(fetchResult[1].itemCount);
+            }
+
             // External items used
             if (setItems) {
                 setItems(itemsToUse);

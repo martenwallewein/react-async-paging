@@ -21,4 +21,6 @@ export interface IAsyncPagingNavigationFuncs {
     last: () => Promise<void>;
 }
 
+export type IAsyncPagingItemStore<T> = {[p: number]: T[]};
+
 export type IAsyncPagingChildFunc<T> = (items: T[], meta: IAsyncPagingMetaInfo, nav: IAsyncPagingNavigationFuncs) => any; // FIXME Types

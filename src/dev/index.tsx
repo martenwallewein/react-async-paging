@@ -1,10 +1,14 @@
 import ReactDOM from "react-dom";
 import * as React from "react";
 import { InternalList } from './InternalList';
+import { ExternalList } from "./ExternalList";
 
 // Render App
 const appContext = (
-   <InternalList />
+    <div>
+    <InternalList />
+    <ExternalList />
+   </div>
 );
 
 ReactDOM.render(

@@ -16,17 +16,25 @@ By default this library keeps the data items in an internal state. To have the i
 
 Default with internal State
 ```tsx=
-import {times} from 'lodash';
-
+import { times } from "../util/times";
+import * as React from 'react';
+import { AsyncPaging } from "../components/AsyncPaging";
+import { IFetchDataFunc } from "../types/FetchData";
 // Imagine this array is on your server...
 const items = times(100);
 
 // ...and this method fetches the corresponding items from the server
-const fetchPage = async (pageNumber: number, pageSize: number) => {
-    return times.slice(pageNumber, pageSize);
+const fetchPage: IFetchDataFunc<number> = (pageNumber: number, pageSize: number) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const res  = items.slice(pageNumber * pageSize, pageNumber * pageSize + pageSize);
+            resolve([res]);
+        }, 1000);
+    })
+   
 }
 
-const MyPaginatedList = () => {
+export const InternalList = () => {
     return (
         <AsyncPaging fetchPage={fetchPage} pageSize={5} itemCount={100}>
         {
@@ -48,47 +56,56 @@ const MyPaginatedList = () => {
                     <button onClick={first}>First</button>
                     <button onClick={back}>Back</button>
                     {
-                          pages.map(p => <button onClick={() => goto(p)}>{p}</button>)  
+                          pages.map(p => 
+                            <button onClick={() => goto(p)}>
+                                {p === currentPage ? <b>{p}</b> : p}
+                            </button>)  
                     }
                     <button onClick={next}>Next</button>
                     <button onClick={last}>Last</button>
+                    <br />
+                    <span>PageCount: {pageCount}</span>
                 </div>
         }
         </AsyncPaging>
     )
 }
 
+
 ```
 
 
 External State and fetchPage meta information
 ```tsx=
-import {times} from 'lodash';
-
+import { times } from "../util/times";
+import * as React from 'react';
+import { AsyncPaging } from "../components/AsyncPaging";
+import { IFetchDataFunc } from "../types/FetchData";
+import { IAsyncPagingItemStore } from "../types/AsyncPaging";
+// Imagine this array is on your server...
 const items = times(100);
 
-const fetchPage = async (pageNumber: number, pageSize: number) => {
-    return [times.slice(pageNumber, pageSize), {
-        // ItemCount may be fetched with the pages itself, so it can be 
-        // useful to allow it to be set here
-        itemCount: 100,
-    }];
+// ...and this method fetches the corresponding items from the server
+const fetchPage: IFetchDataFunc<number> = (pageNumber: number, pageSize: number) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const res  = items.slice(pageNumber * pageSize, pageNumber * pageSize + pageSize);
+            resolve([res]);
+        }, 1000);
+    })
+   
 }
 
-const MyPaginatedList = () => {
-
-    // This array is filled with each fetchPage request
-    const [paginatedItems, setPaginatedItems] = useState<any>([]);
+export const ExternalList = () => {
+    const [items, setItems] = React.useState<IAsyncPagingItemStore<number>>({});
 
     return (
-        // Having paginatedItems passed to this, we also have to add setItems
-        <AsyncPaging fetchPage={fetchPage} pageSize={5} items={paginatedItems} setItems={setPaginatedItems}>
+        <AsyncPaging fetchPage={fetchPage} pageSize={5} itemCount={100} items={items} setItems={setItems}>
         {
             (items, {
                 currentPage,
                 pageCount,
                 pages,
-                fetchState,
             }, {
                 goto,
                 back,
@@ -103,10 +120,15 @@ const MyPaginatedList = () => {
                     <button onClick={first}>First</button>
                     <button onClick={back}>Back</button>
                     {
-                          pages.map(p => <button onClick={() => goto(p)}>{p}</button>)  
+                          pages.map(p => 
+                            <button onClick={() => goto(p)}>
+                                {p === currentPage ? <b>{p}</b> : p}
+                            </button>)  
                     }
                     <button onClick={next}>Next</button>
                     <button onClick={last}>Last</button>
+                    <br />
+                    <span>PageCount: {pageCount}</span>
                 </div>
         }
         </AsyncPaging>
