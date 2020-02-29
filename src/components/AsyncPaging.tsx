@@ -11,6 +11,7 @@ export interface IAsyncPagingProps<T> {
     pageSize: number;
     setItems?: (items:  IAsyncPagingItemStore<T>) => void;
     skipInitialFetch?: boolean;
+    key?: any;
 }
 
 // Extends required due to https://github.com/Microsoft/TypeScript/issues/4922
@@ -23,6 +24,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         pageSize,
         setItems,
         skipInitialFetch,
+        key,
     } = props;
 
     // Prefer items if passed
@@ -67,12 +69,11 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         ) => {
             const itemsToUse = {...(items || paginatedItems)};
             itemsToUse[fetchRequest.pageNumber] = fetchResult[0];
-
             // Update itemCount if required (comes from api call)
             if(fetchResult[1]) {
                 setInternalItemCount(fetchResult[1].itemCount);
             }
-
+            
             // External items used
             if (setItems) {
                 setItems(itemsToUse);
@@ -81,6 +82,22 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             }
             setFetchState(IFetchState.LOADED);
     };
+
+    // Reset everything if page size or key changed
+    useEffect(() => {
+       if(items && setItems) {
+            const shouldBeReset = Object.keys(items).length > 0;
+            if (shouldBeReset) {
+                setItems({});
+            }
+       } else {
+        const shouldBeReset = Object.keys(paginatedItems).length > 0;
+        if (shouldBeReset) {
+            setPaginatedItems({});
+        }
+       }
+       setCurrentPage(0);
+    }, [pageSize, key]);
 
     // Keep pages up to date, infer pagecount from pages
     useEffect(() => {
@@ -115,12 +132,29 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
 
     // Initial render finished, load first page?
     useEffect(() => {
-        if (!skipInitialFetch) {
-            fetchPageImpl(0);
-        } else {
-            setFetchState(IFetchState.READY);
+        if(!items) {
+            const shouldBeReset = Object.keys(paginatedItems).length === 0;
+        
+            if (shouldBeReset && !skipInitialFetch) {
+                fetchPageImpl(0);
+            } else {
+                setFetchState(IFetchState.READY);
+            }
         }
-    }, []);
+    }, [paginatedItems]);
+
+    // Initial render finished, load first page?
+    useEffect(() => {
+        if(items) {
+            const shouldBeReset = Object.keys(items).length === 0;
+        
+            if (shouldBeReset && !skipInitialFetch) {
+                fetchPageImpl(0);
+            } else {
+                setFetchState(IFetchState.READY);
+            }
+        }
+    }, [items]);
 
     const back = async () => {
         if(currentPage >= 1) {
@@ -149,7 +183,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     };
 
     return (
-        children(itemsToDisplay, {
+        children(itemsToDisplay || [], {
             currentPage,
             fetchState,
             pageCount: pages.length,
