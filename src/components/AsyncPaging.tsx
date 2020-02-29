@@ -48,7 +48,6 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         setNextPage(pageNumber);
 
         const itemsToUse = items || paginatedItems;
-
         // Check if fetch request can be cached
         if (itemsToUse[pageNumber]) {
             // Finished fetch, data locally available
@@ -80,6 +79,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             } else { // Internal items used
                 setPaginatedItems(itemsToUse);
             }
+            
             setFetchState(IFetchState.LOADED);
     };
 
@@ -109,6 +109,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
 
     // Check if we have to update children if page changed
     useEffect(() => {
+        
         // External state used and currently fetching complete, then update page
         if (items && fetchState === IFetchState.LOADED) {
             setFetchState(IFetchState.READY);
@@ -138,7 +139,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             if (shouldBeReset && !skipInitialFetch) {
                 fetchPageImpl(0);
             } else {
-                setFetchState(IFetchState.READY);
+                // setFetchState(IFetchState.READY);
             }
         }
     }, [paginatedItems]);
@@ -151,7 +152,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             if (shouldBeReset && !skipInitialFetch) {
                 fetchPageImpl(0);
             } else {
-                setFetchState(IFetchState.READY);
+                // setFetchState(IFetchState.READY);
             }
         }
     }, [items]);
