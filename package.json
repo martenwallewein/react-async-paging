@@ -1,6 +1,6 @@
 {
   "name": "react-async-paging",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "module": "build/index.es.js",
   "jsnext:main": "build/index.es.js",
