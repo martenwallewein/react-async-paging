@@ -12,6 +12,7 @@ export interface IAsyncPagingProps<T> {
     setItems?: (items:  IAsyncPagingItemStore<T>) => void;
     skipInitialFetch?: boolean;
     pkey?: any;
+    onPageChanged?: (pageNumber: number) => void;
 }
 
 // Extends required due to https://github.com/Microsoft/TypeScript/issues/4922
@@ -25,6 +26,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         setItems,
         skipInitialFetch,
         pkey,
+        onPageChanged,
     } = props;
 
     // Prefer items if passed
@@ -41,6 +43,10 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     const updateDisplayItems = (pageNumber: number) => {
         const itemsToUse = items || paginatedItems;
         setItemsToDisplay(itemsToUse[pageNumber]);
+
+        if (onPageChanged) {
+            onPageChanged(pageNumber);
+        }
     }
 
     const fetchPageImpl = async (pageNumber: number) => {
@@ -126,7 +132,6 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     }, [items, paginatedItems, fetchState]);
 
     useEffect(() => {
-        debugger;
         if (itemCount && itemCount > 0) {
             setInternalItemCount(itemCount);
         }
