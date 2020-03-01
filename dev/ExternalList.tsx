@@ -1,8 +1,8 @@
-import { times } from "../util/times";
+import { times } from "../src/util/times";
 import * as React from 'react';
-import { AsyncPaging } from "../components/AsyncPaging";
-import { IFetchDataFunc } from "../types/FetchData";
-import { IAsyncPagingItemStore } from "../types/AsyncPaging";
+import { AsyncPaging } from "../src/components/AsyncPaging";
+import { IFetchDataFunc } from "../src/types/FetchData";
+import { IAsyncPagingItemStore } from "../src/types/AsyncPaging";
 // Imagine this array is on your server...
 const items = times(100);
 

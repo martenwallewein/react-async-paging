@@ -1,6 +1,6 @@
 {
   "name": "react-async-paging",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "module": "build/index.es.js",
   "jsnext:main": "build/index.es.js",
@@ -12,13 +12,13 @@
     "test": "jest --coverage"
   },
   "main": "build/index.js",
-    "publishConfig": {
-        "registry": "https://registry.npmjs.com",
-        "access": "public"
-    },
-    "files": [
-        "build"
-    ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "files": [
+    "build"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -68,5 +68,9 @@
       "jest"
     ]
   },
-  "dependencies": {}
+  "dependencies": {},
+  "peerDependencies": {
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0"
+  }
 }
