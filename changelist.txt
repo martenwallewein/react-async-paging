@@ -1,0 +1,6 @@
+[+] = new function, [-] = deleted function, [F] = bugfix, [C] = change
+
+React Async Paging
+
+-------------------- Version 1.1.0 - 03/04/2020 --------------------
+[+] Add 'queryparams' persistantPaging implementation

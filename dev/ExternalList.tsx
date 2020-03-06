@@ -27,7 +27,7 @@ export const ExternalList = () => {
         }, 3000)
     }, [])*/
     return (
-        <AsyncPaging fetchPage={fetchPage} pageSize={pageSize} items={items} setItems={setItems}>
+        <AsyncPaging fetchPage={fetchPage} pageSize={pageSize} items={items} setItems={setItems} persistentPaginationType={'queryparams'}>
         {
             (items, {
                 currentPage,

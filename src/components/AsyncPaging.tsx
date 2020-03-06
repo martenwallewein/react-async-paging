@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { IFetchDataFunc, IFetchDataResponse, IFetchObjectInput } from '../types/FetchData';
 import { IAsyncPagingChildFunc, IFetchState, IAsyncPagingItemStore } from '../types/AsyncPaging';
 import { times } from '../util/times';
+import { getQueryParams, addQueryArgsToLocation } from '../util/queryparams';
 
 export interface IAsyncPagingProps<T> {
     items?: IAsyncPagingItemStore<T>;
@@ -13,6 +14,7 @@ export interface IAsyncPagingProps<T> {
     skipInitialFetch?: boolean;
     pkey?: any;
     onPageChanged?: (pageNumber: number) => void;
+    persistentPaginationType?: 'queryparams';
 }
 
 // Extends required due to https://github.com/Microsoft/TypeScript/issues/4922
@@ -27,6 +29,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         skipInitialFetch,
         pkey,
         onPageChanged,
+        persistentPaginationType,
     } = props;
 
     // Prefer items if passed
@@ -39,6 +42,8 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     const [currentPage, setCurrentPage] = useState<number>(0);
     const [internalItemCount, setInternalItemCount] = useState<number>(itemCount || 0);
     const [pages, setPages] = useState<number[]>([]);
+    const [historySearch, setHistorySearch] = useState<string>(window.location.search);
+    const queryParams = getQueryParams(historySearch);
 
     const updateDisplayItems = (pageNumber: number) => {
         const itemsToUse = items || paginatedItems;
@@ -52,7 +57,6 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     const fetchPageImpl = async (pageNumber: number) => {
         setFetchState(IFetchState.LOADING);
         setNextPage(pageNumber);
-
         const itemsToUse = items || paginatedItems;
         // Check if fetch request can be cached
         if (itemsToUse[pageNumber]) {
@@ -60,7 +64,6 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             setFetchState(IFetchState.LOADED);
             return;
         }
-
         const fetchRes = await fetchPage(pageNumber, pageSize);
         handleFetchedPage({
             pageNumber,
@@ -87,6 +90,24 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             }
             
             setFetchState(IFetchState.LOADED);
+    };
+
+    const handleLoadPage = () => {
+        setFetchState(IFetchState.READY);
+        setCurrentPage(nextPage);
+        updateDisplayItems(nextPage);
+
+        if(persistentPaginationType === 'queryparams') {
+            const newQueryArgs = {
+                ...queryParams,
+                __p: nextPage,
+                __s: pageSize,
+            }
+            const newLocation = addQueryArgsToLocation("", newQueryArgs)
+            history.pushState({}, "", newLocation);
+            setHistorySearch(newLocation);
+            // window.location.replace(addQueryArgsToLocation(newLocation, newQueryArgs));
+        }
     };
 
     // Reset everything if page size or key changed
@@ -117,17 +138,13 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     useEffect(() => {
         
         // External state used and currently fetching complete, then update page
-        if (items && fetchState === IFetchState.LOADED) {
-            setFetchState(IFetchState.READY);
-            setCurrentPage(nextPage);
-            updateDisplayItems(nextPage);
-        }
+        // if (items && fetchState === IFetchState.LOADED) {
+        //   handleLoadPage();
+        // }
         
         // Local items used and fetching complete, then update page
         if (fetchState === IFetchState.LOADED) {
-            setFetchState(IFetchState.READY);
-            setCurrentPage(nextPage);
-            updateDisplayItems(nextPage);
+            handleLoadPage();
         }
     }, [items, paginatedItems, fetchState]);
 
@@ -141,8 +158,8 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     useEffect(() => {
         if(!items) {
             const shouldBeReset = Object.keys(paginatedItems).length === 0;
-        
-            if (shouldBeReset && !skipInitialFetch) {
+
+            if (shouldBeReset && !skipInitialFetch ) {
                 fetchPageImpl(0);
             } else {
                 // setFetchState(IFetchState.READY);
@@ -154,14 +171,32 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     useEffect(() => {
         if(items) {
             const shouldBeReset = Object.keys(items).length === 0;
-        
-            if (shouldBeReset && !skipInitialFetch) {
+;
+            if (shouldBeReset && !skipInitialFetch 
+                && !queryParams?.__p) {
                 fetchPageImpl(0);
             } else {
                 // setFetchState(IFetchState.READY);
             }
         }
     }, [items]);
+
+    // If paging is loaded initially 
+    useEffect(() => {
+        if(persistentPaginationType === 'queryparams' && queryParams?.__p && queryParams?.__p !== currentPage) {
+            const page = Number(queryParams?.__p);
+            fetchPageImpl(page);
+        }
+    }, [historySearch]);
+
+    useEffect(() => {
+
+        const onHistoryChange = () => {
+            setHistorySearch(window.location.search);
+        };
+        window.addEventListener('popstate', onHistoryChange);
+        return () => window.removeEventListener('popstate', onHistoryChange)
+    }, []);
 
     const back = async () => {
         if(currentPage >= 1) {

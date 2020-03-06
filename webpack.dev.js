@@ -2,7 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: './src/dev/index.tsx',
+  entry: './dev/index.tsx',
   module: {
     rules: [
       {
