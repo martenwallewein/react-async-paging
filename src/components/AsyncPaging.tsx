@@ -55,11 +55,13 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     }
 
     const fetchPageImpl = async (pageNumber: number) => {
+        console.log('fetch');
         setFetchState(IFetchState.LOADING);
         setNextPage(pageNumber);
         const itemsToUse = items || paginatedItems;
         // Check if fetch request can be cached
         if (itemsToUse[pageNumber]) {
+            console.log('from cache');
             // Finished fetch, data locally available
             setFetchState(IFetchState.LOADED);
             return;
@@ -171,9 +173,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     useEffect(() => {
         if(items) {
             const shouldBeReset = Object.keys(items).length === 0;
-;
-            if (shouldBeReset && !skipInitialFetch 
-                && !queryParams?.__p) {
+            if (shouldBeReset && !skipInitialFetch) {
                 fetchPageImpl(0);
             } else {
                 // setFetchState(IFetchState.READY);

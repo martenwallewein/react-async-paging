@@ -19,13 +19,13 @@ const fetchPage: IFetchDataFunc<number> = (pageNumber: number, pageSize: number)
 
 export const ExternalList = () => {
     const [items, setItems] = React.useState<IAsyncPagingItemStore<number>>({});
-    const [pageSize, /*setPageSize*/] = React.useState(5);
+    const [pageSize, setPageSize] = React.useState(5);
 
-    /*React.useEffect(() => {
+    React.useEffect(() => {
         setTimeout(() => {
             setPageSize(10);
         }, 3000)
-    }, [])*/
+    }, [])
     return (
         <AsyncPaging fetchPage={fetchPage} pageSize={pageSize} items={items} setItems={setItems} persistentPaginationType={'queryparams'}>
         {
