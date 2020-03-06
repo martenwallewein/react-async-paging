@@ -118,11 +118,20 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
             const shouldBeReset = Object.keys(items).length > 0;
             if (shouldBeReset) {
                 setItems({});
+                if(persistentPaginationType === 'queryparams') {
+                    history.replaceState({}, "", "");
+                    setHistorySearch("/");
+                }
+                
             }
        } else {
         const shouldBeReset = Object.keys(paginatedItems).length > 0;
         if (shouldBeReset) {
             setPaginatedItems({});
+            if(persistentPaginationType === 'queryparams') {
+                history.replaceState({}, "", "");
+                setHistorySearch("/");
+            }
         }
        }
        setCurrentPage(0);
@@ -161,7 +170,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
         if(!items) {
             const shouldBeReset = Object.keys(paginatedItems).length === 0;
 
-            if (shouldBeReset && !skipInitialFetch ) {
+            if (shouldBeReset && !skipInitialFetch && !queryParams?.__p) {
                 fetchPageImpl(0);
             } else {
                 // setFetchState(IFetchState.READY);
@@ -173,7 +182,7 @@ export const AsyncPaging = <T extends any>(props: IAsyncPagingProps<T>) => {
     useEffect(() => {
         if(items) {
             const shouldBeReset = Object.keys(items).length === 0;
-            if (shouldBeReset && !skipInitialFetch) {
+            if (shouldBeReset && !skipInitialFetch && !queryParams?.__p) {
                 fetchPageImpl(0);
             } else {
                 // setFetchState(IFetchState.READY);
