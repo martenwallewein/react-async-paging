@@ -25,7 +25,7 @@ const PagingSessionStoreContext = React.createContext<IPagingSessionStoreContext
 const PagingSessionStoreContextProvider = (props: any) => {
     const sessionStoreKey = "persistent_asyncpaging_entries";
     const loadFromStorage = () => {
-        const res = localStorage.getItem(sessionStoreKey);
+        const res = sessionStorage.getItem(sessionStoreKey);
         return JSON.parse(res || "[]") as IPagingSessionStoreEntry[];
     }
 
@@ -45,7 +45,7 @@ const PagingSessionStoreContextProvider = (props: any) => {
     };
 
     const saveToStorage = (entries: IPagingSessionStoreEntry[]) => {
-        localStorage.setItem(sessionStoreKey, JSON.stringify(entries));
+        sessionStorage.setItem(sessionStoreKey, JSON.stringify(entries));
     };
 
     const saveEntry = (entry: IPagingSessionStoreEntry) => {
