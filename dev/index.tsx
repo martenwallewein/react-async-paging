@@ -2,12 +2,14 @@ import ReactDOM from "react-dom";
 import * as React from "react";
 import { InternalList } from './InternalList';
 import { ExternalList } from "./ExternalList";
-
+import { PagingSessionStoreContextProvider } from "../src/components/sessionstore/PagingSessionStore";
 // Render App
 const appContext = (
     <div>
-    <InternalList />
-    <ExternalList />
+        <PagingSessionStoreContextProvider>
+            <InternalList />
+            <ExternalList />
+        </PagingSessionStoreContextProvider>
    </div>
 );
 

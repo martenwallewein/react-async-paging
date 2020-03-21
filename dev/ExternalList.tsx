@@ -1,8 +1,10 @@
 import { times } from "../src/util/times";
 import * as React from 'react';
-import { AsyncPaging } from "../src/components/AsyncPaging";
+import { AsyncPagingSessionStore } from "../src/components/sessionstore/AsyncPagingSessionStore";
 import { IFetchDataFunc } from "../src/types/FetchData";
 import { IAsyncPagingItemStore } from "../src/types/AsyncPaging";
+// @ts-ignore
+import Select from 'react-select'
 // Imagine this array is on your server...
 const items = times(100);
 
@@ -14,20 +16,35 @@ const fetchPage: IFetchDataFunc<number> = (pageNumber: number, pageSize: number)
             resolve([res, {itemCount: 100}]);
         }, 1000);
     })
-   
 }
+
+
+const options = [
+    { value: 'asc', label: 'Ascending' },
+    { value: 'desc', label: 'Descending' }
+];
 
 export const ExternalList = () => {
     const [items, setItems] = React.useState<IAsyncPagingItemStore<number>>({});
-    const [pageSize, setPageSize] = React.useState(5);
+    const [pageSize/*, setPageSize*/] = React.useState(5);
+    const [sorting, setSorting] = React.useState(options[0]);
 
-    React.useEffect(() => {
+    /*React.useEffect(() => {
         setTimeout(() => {
             setPageSize(10);
         }, 3000)
-    }, [])
+    }, []);*/
     return (
-        <AsyncPaging fetchPage={fetchPage} pageSize={pageSize} items={items} setItems={setItems} persistentPaginationType={'queryparams'}>
+        <div>
+        <Select options={options} value={sorting} onChange={(e: any) => setSorting(e)}/>
+        <AsyncPagingSessionStore
+            fetchPage={fetchPage}
+            pageSize={pageSize}
+            items={items}
+            setItems={setItems}
+            entryId="externalList"
+            pkey={sorting.value}
+        >
         {
             (items, {
                 currentPage,
@@ -58,6 +75,7 @@ export const ExternalList = () => {
                     <span>PageCount: {pageCount}</span>
                 </div>
         }
-        </AsyncPaging>
+        </AsyncPagingSessionStore>
+        </div>
     )
 }
