@@ -2,8 +2,6 @@
   "name": "react-async-paging",
   "version": "1.0.7",
   "description": "",
-  "module": "build/index.es.js",
-  "jsnext:main": "build/index.es.js",
   "scripts": {
     "start": "webpack-dev-server --hot --inline --colors --port 3000 --open  --config webpack.dev.js",
     "build": "tsc",
